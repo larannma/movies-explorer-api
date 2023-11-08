@@ -1,10 +1,14 @@
 require('dotenv').config();
 const jwt = require('jsonwebtoken');
 
+const {
+  NotAuthorizedError,
+} = require('../errors/errors');
+
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretstring';
 
 const auth = (req, res, next) => {
-  const token = req.headers.authorization;
+  const token = req.cookies.token;
   if (!token) {
     next(new NotAuthorizedError('Необходима авторизация'));
     return;

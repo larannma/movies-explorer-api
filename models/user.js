@@ -6,10 +6,6 @@ const userShema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    validate: {
-      validator: validator.isEmail,
-      message: '{VALUE} is not a valid email',
-    },
   },
   password: {
     type: String,

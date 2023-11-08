@@ -6,10 +6,13 @@ const userRouter = require('./routes/users');
 const movieRouter = require('./routes/movies');
 const { auth } = require('./middlewares/auth');
 const { celebrate, Joi } = require('celebrate');
+const cookieParser = require('cookie-parser');
+const { requestLogger, errorLogger } = require('./middlewares/logger');
 
 const {
   createUser,
   login,
+  logout
 } = require('./controllers/users');
 
 const corseAllowedOrigins = [
@@ -18,16 +21,16 @@ const corseAllowedOrigins = [
 
 const {
   PORT = 3000,
-  DB_URL = 'mongodb://localhost:27017/bitfilmsdb',
+  DB_URL = 'mongodb://127.0.0.1/bitfilmsdb',
 } = process.env;
-
-console.log(DB_URL)
 
 mongoose.connect(DB_URL, {
   useNewUrlParser: true,
 });
 
 const app = express();
+
+app.use(cookieParser());
 
 app.use(cors({
   origin: corseAllowedOrigins,
@@ -37,31 +40,35 @@ app.use(cors({
 
 app.use(express.static('public'));
 app.use(express.json());
-
-// app.post('/signin', celebrate({
-//   body: Joi.object().keys({
-//     email: Joi.string().required().email(),
-//     password: Joi.string().required().min(8),
-//   }),
-// }), login);
+app.use(requestLogger);
+app.post('/signin', celebrate({
+  body: Joi.object().keys({
+    email: Joi.string().required().email(),
+    password: Joi.string().required().min(8),
+    name: Joi.string().required().min(2).max(20),
+  }),
+}), login);
 
 app.post('/signup', celebrate({
   body: Joi.object().keys({
     email: Joi.string().required().email(),
     password: Joi.string().required().min(8),
-    name: Joi.string().required().min(8).max(20),
+    name: Joi.string().required().min(2).max(20),
   }),
 }), createUser);
 
-// app.use(auth);
+app.post('/signout', logout);
+
+app.use(auth);
 
 //routes
 app.use('/users', userRouter);
 app.use('/movies', movieRouter);
 
+app.use(errorLogger);
+
 app.use((err, req, res) => {
   const { statusCode = 500, message } = err;
-
   res
     .status(statusCode)
     .send({

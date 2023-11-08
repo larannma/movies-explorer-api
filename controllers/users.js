@@ -2,6 +2,13 @@ const userModel = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 
+const {
+  ConflictError,
+  NotFoundError,
+  NotAuthorizedError,
+} = require('../errors/errors');
+
+
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS, 10) || 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretstring';
 
@@ -14,8 +21,10 @@ const createUser = (req, res, next) => {
     const userData = {
       email, password: hash, name
     };
+
     return userModel.create(userData)
       .then((r) => {
+        console.log(r)
         const { passwordHashed, ...userWithoutPassword } = r.toObject();
         res.status(201).send(userWithoutPassword);
       })
@@ -24,32 +33,41 @@ const createUser = (req, res, next) => {
           next(new ConflictError('Пользователь с таким email уже существует'));
           return;
         }
-        next(err);
+        next(error);
       });
   });
 };
 
-// const login = (req, res, next) => {
-//   const { email, password } = req.body;
-//   return userModel.findOne({ email }).select('+password').then((user) => {
-//     if (!user) {
-//       next(new NotAuthorizedError('Такого пользователя не существует'));
-//       return;
-//     }
-//     bcrypt.compare(password, user.password, (err, isValid) => {
-//       if (!isValid) {
-//         next(new NotAuthorizedError('Пароль неверный'));
-//         return;
-//       }
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+  return userModel.findOne({ email }).select('+password').then((user) => {
+    if (!user) {
+      next(new NotAuthorizedError('Такого пользователя не существует'));
+      return;
+    }
+    bcrypt.compare(password, user.password, (err, isValid) => {
+      if (!isValid) {
+        next(new NotAuthorizedError('Пароль неверный'));
+        return;
+      }
 
-//       const token = jwt.sign({
-//         _id: user._id,
-//       }, JWT_SECRET, { expiresIn: '1w' });
+      const token = jwt.sign({
+        _id: user._id,
+      }, JWT_SECRET, { expiresIn: '1w' });
 
-//       return res.status(200).send({ token });
-//     });
-//   }).catch((err) => next(err));
-// };
+      res.cookie('token', token, {
+        maxAge: 3600000 * 24 * 7,
+        httpOnly: false
+      });
+
+      return res.status(200).send({ token });
+    });
+  }).catch((err) => next(err));
+};
+
+const logout = (req, res, err) => {
+
+}
 
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
@@ -80,5 +98,6 @@ module.exports = {
   getCurrentUser,
   updateCurrentUser,
   createUser,
-  // login,
+  login,
+  logout
 }

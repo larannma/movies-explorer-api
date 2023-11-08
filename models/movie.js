@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const validator = require('validator');
 
 const movieShema = new mongoose.Schema({
-	ountry: {
+	country: {
 		type: String,
 		required: true,
   },
