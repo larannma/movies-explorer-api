@@ -11,15 +11,15 @@ const userShema = new mongoose.Schema({
       message: '{VALUE} is not a valid email',
     },
   },
-  name: {
-    type: String,
-    minlength: 2,
-    maxlength: 30,
-  },
   password: {
     type: String,
     select: false,
     required: true,
+  },
+  name: {
+    type: String,
+    minlength: 2,
+    maxlength: 30,
   },
 });
 
