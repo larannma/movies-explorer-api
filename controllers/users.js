@@ -65,9 +65,15 @@ const login = (req, res, next) => {
   }).catch((err) => next(err));
 };
 
-const logout = (req, res, err) => {
+const logout = (req, res, next) => {
+  try {
+    res.clearCookie('token');
+    return res.status(200).send({ message: "Куки очищены" });
+  } catch (error) {
+    next(error);
+  }
+};
 
-}
 
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
