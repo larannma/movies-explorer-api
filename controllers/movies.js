@@ -1,11 +1,17 @@
 const movieModel = require('../models/movie');
 
+const {
+  NotFoundError,
+  ForbiddenError
+} = require('../errors/errors');
+
 const getMovies = (req, res, next) => movieModel.find({})
 .then((r) => res.status(200).send(r))
 .catch((err) => next(err));
 
 
 const createMovie = (req, res, next) => {
+  const owner = req.user._id;
   const {
     country,
     director,
@@ -15,12 +21,11 @@ const createMovie = (req, res, next) => {
     image,
     trailerLink,
     thumbnail,
-    owner,
     movieId,
     nameRU,
     nameEN
    } = req.body;
-  return cardModel.create({
+  return movieModel.create({
       country,
       director,
       duration,
@@ -39,8 +44,9 @@ const createMovie = (req, res, next) => {
 };
 
 const deleteMovie = async (req, res, next) => {
+
   try {
-    const { movieId } = req.params.cardId;
+    const { movieId } = req.params;
 
     const movie = await movieModel.findById(movieId);
 

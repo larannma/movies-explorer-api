@@ -82,9 +82,9 @@ const getCurrentUser = (req, res, next) => {
 };
 
 const updateCurrentUser = (req, res, next) => {
-  const { name, about } = req.body;
+  const { email, name } = req.body;
   return userModel
-    .findByIdAndUpdate(req.user._id, { name, about }, { new: true, runValidators: true })
+    .findByIdAndUpdate(req.user._id, { email, name }, { new: true, runValidators: true })
     .then((r) => {
       if (r === null) {
         throw new NotFoundError('Пользователь не найден');
