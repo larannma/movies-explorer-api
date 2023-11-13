@@ -2,13 +2,12 @@ const movieModel = require('../models/movie');
 
 const {
   NotFoundError,
-  ForbiddenError
+  ForbiddenError,
 } = require('../errors/errors');
 
-const getMovies = (req, res, next) => movieModel.find({})
-.then((r) => res.status(200).send(r))
-.catch((err) => next(err));
-
+const getMovies = (req, res, next) => movieModel.find({ owner: req.user._id })
+  .then((r) => res.status(200).send(r))
+  .catch((err) => next(err));
 
 const createMovie = (req, res, next) => {
   const owner = req.user._id;
@@ -23,28 +22,27 @@ const createMovie = (req, res, next) => {
     thumbnail,
     movieId,
     nameRU,
-    nameEN
-   } = req.body;
+    nameEN,
+  } = req.body;
   return movieModel.create({
-      country,
-      director,
-      duration,
-      year,
-      description,
-      image,
-      trailerLink,
-      thumbnail,
-      owner,
-      movieId,
-      nameRU,
-      nameEN
-   })
+    country,
+    director,
+    duration,
+    year,
+    description,
+    image,
+    trailerLink,
+    thumbnail,
+    owner,
+    movieId,
+    nameRU,
+    nameEN,
+  })
     .then((r) => res.status(201).send(r))
     .catch((err) => next(err));
 };
 
 const deleteMovie = async (req, res, next) => {
-
   try {
     const { movieId } = req.params;
 

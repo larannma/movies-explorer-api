@@ -1,6 +1,6 @@
-const userModel = require('../models/user');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
+const userModel = require('../models/user');
 
 const {
   ConflictError,
@@ -8,25 +8,22 @@ const {
   NotAuthorizedError,
 } = require('../errors/errors');
 
-
 const SALT_ROUNDS = parseInt(process.env.SALT_ROUNDS, 10) || 10;
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretstring';
 
 const createUser = (req, res, next) => {
   const {
-    email, password, name
+    email, password, name,
   } = req.body;
 
   bcrypt.hash(password, SALT_ROUNDS, (err, hash) => {
     const userData = {
-      email, password: hash, name
+      email, password: hash, name,
     };
 
     return userModel.create(userData)
-      .then((r) => {
-        console.log(r)
-        const { passwordHashed, ...userWithoutPassword } = r.toObject();
-        res.status(201).send(userWithoutPassword);
+      .then(() => {
+        res.status(201).send({ message: 'Пользователь успешно зарегестрирован' });
       })
       .catch((error) => {
         if (error.code === 11000) {
@@ -57,7 +54,7 @@ const login = (req, res, next) => {
 
       res.cookie('token', token, {
         maxAge: 3600000 * 24 * 7,
-        httpOnly: false
+        httpOnly: false,
       });
 
       return res.status(200).send({ token });
@@ -68,13 +65,11 @@ const login = (req, res, next) => {
 const logout = (req, res, next) => {
   try {
     res.clearCookie('token');
-    return res.status(200).send({ message: "Куки очищены" });
+    return res.status(200).send({ message: 'Куки очищены' });
   } catch (error) {
     next(error);
   }
 };
-
-
 const getCurrentUser = (req, res, next) => {
   const userId = req.user._id;
   return userModel.findById(userId)
@@ -89,13 +84,21 @@ const getCurrentUser = (req, res, next) => {
 
 const updateCurrentUser = (req, res, next) => {
   const { email, name } = req.body;
-  return userModel
-    .findByIdAndUpdate(req.user._id, { email, name }, { new: true, runValidators: true })
-    .then((r) => {
-      if (r === null) {
+
+  userModel.findOne({ email })
+    .then((existingUser) => {
+      if (existingUser && existingUser._id.toString() !== req.user._id.toString()) {
+        throw new ConflictError('Пользователь с таким адресом электронной почты уже существует');
+      }
+
+      return userModel
+        .findByIdAndUpdate(req.user._id, { email, name }, { new: true, runValidators: true });
+    })
+    .then((updatedUser) => {
+      if (updatedUser === null) {
         throw new NotFoundError('Пользователь не найден');
       }
-      return res.status(200).send(r);
+      return res.status(200).send(updatedUser);
     })
     .catch((err) => next(err));
 };
@@ -105,5 +108,5 @@ module.exports = {
   updateCurrentUser,
   createUser,
   login,
-  logout
-}
+  logout,
+};

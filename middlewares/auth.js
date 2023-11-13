@@ -8,7 +8,7 @@ const {
 const JWT_SECRET = process.env.JWT_SECRET || 'supersecretstring';
 
 const auth = (req, res, next) => {
-  const token = req.cookies.token;
+  const { token } = req.cookies;
   if (!token) {
     next(new NotAuthorizedError('Необходима авторизация'));
     return;

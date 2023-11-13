@@ -1,6 +1,8 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
+const urlRegex = /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6})(\/[\w.-]*)*\/?$/;
+
 const {
   getMovies,
   createMovie,
@@ -16,14 +18,14 @@ router.post('/', celebrate({
     duration: Joi.number().required(),
     year: Joi.string().required(),
     description: Joi.string().required(),
-    image: Joi.string().uri().required(),
-    trailerLink: Joi.string().uri().required(),
-    thumbnail: Joi.string().uri().required(),
+    image: Joi.string().regex(urlRegex).required(),
+    trailerLink: Joi.string().regex(urlRegex).required(),
+    thumbnail: Joi.string().regex(urlRegex).required(),
     movieId: Joi.number().required(),
     nameEN: Joi.string().required(),
     nameRU: Joi.string().required(),
   }),
-}),createMovie);
+}), createMovie);
 
 router.delete('/:movieId', celebrate({
   params: Joi.object().keys({
