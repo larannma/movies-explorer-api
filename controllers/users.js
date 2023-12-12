@@ -54,7 +54,6 @@ const login = (req, res, next) => {
 
       res.cookie('token', token, {
         maxAge: 3600000 * 24 * 7,
-        httpOnly: false,
       });
 
       return res.status(200).send({ token });
