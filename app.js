@@ -16,6 +16,8 @@ const {
 
 const corseAllowedOrigins = [
   'http://localhost:3000',
+  'http://movies.larannma.nomoredomainsmonster.ru',
+  'https://movies.larannma.nomoredomainsmonster.ru',
 ];
 
 const {
