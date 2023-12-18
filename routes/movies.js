@@ -1,7 +1,9 @@
 const router = require('express').Router();
 const { celebrate, Joi } = require('celebrate');
 
-const urlRegex = /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6})(\/[\w.-]*)*\/?$/;
+// const urlRegex = /^(https?:\/\/)?([\w.-]+)\.([a-z]{2,6})(\/[\w.-]*)*\/?$/;
+// const movieLinkRegex = /(?:https?:\/\/)?(?:www\.)?youtube\.com\/watch\?v=([a-zA-Z0-9_-]{11})/;
+const imageLInkRegex = /[^/]+$/;
 
 const {
   getMovies,
@@ -18,9 +20,9 @@ router.post('/', celebrate({
     duration: Joi.number().required(),
     year: Joi.string().required(),
     description: Joi.string().required(),
-    image: Joi.string().regex(urlRegex).required(),
-    trailerLink: Joi.string().regex(urlRegex).required(),
-    thumbnail: Joi.string().regex(urlRegex).required(),
+    image: Joi.string().regex(imageLInkRegex).required(),
+    trailerLink: Joi.string().required(),
+    thumbnail: Joi.string().regex(imageLInkRegex).required(),
     movieId: Joi.number().required(),
     nameEN: Joi.string().required(),
     nameRU: Joi.string().required(),
